@@ -51,9 +51,14 @@ class ChatListItem extends StatelessWidget {
     final backgroundColor = activeChat
         ? theme.colorScheme.secondaryContainer
         : null;
-    final displayname = room.getLocalizedDisplayname(
-      MatrixLocals(L10n.of(context)),
-    );
+    // For DM rooms, use the target user's display name directly to avoid
+    // including bridge bots in the room name. See:
+    // https://github.com/krille-chan/fluffychat/issues/2116
+    final displayname = directChatMatrixId != null
+        ? room
+            .unsafeGetUserFromMemoryOrFallback(directChatMatrixId)
+            .calcDisplayname()
+        : room.getLocalizedDisplayname(MatrixLocals(L10n.of(context)));
     final filter = this.filter;
     if (filter != null && !displayname.toLowerCase().contains(filter)) {
       return const SizedBox.shrink();

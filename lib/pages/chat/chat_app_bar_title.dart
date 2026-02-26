@@ -27,6 +27,17 @@ class ChatAppBarTitle extends StatelessWidget {
         ),
       );
     }
+
+    // For DM rooms, use the target user's display name directly to avoid
+    // including bridge bots in the room name. See:
+    // https://github.com/krille-chan/fluffychat/issues/2116
+    final directChatMatrixID = room.directChatMatrixID;
+    final roomDisplayname = directChatMatrixID != null
+        ? room
+            .unsafeGetUserFromMemoryOrFallback(directChatMatrixID)
+            .calcDisplayname()
+        : room.getLocalizedDisplayname(MatrixLocals(L10n.of(context)));
+
     return InkWell(
       hoverColor: Colors.transparent,
       splashColor: Colors.transparent,
@@ -42,19 +53,17 @@ class ChatAppBarTitle extends StatelessWidget {
             tag: 'content_banner',
             child: Avatar(
               mxContent: room.avatar,
-              name: room.getLocalizedDisplayname(
-                MatrixLocals(L10n.of(context)),
-              ),
+              name: roomDisplayname,
               size: 32,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment: .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  room.getLocalizedDisplayname(MatrixLocals(L10n.of(context))),
+                  roomDisplayname,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 16),
